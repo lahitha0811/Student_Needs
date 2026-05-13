@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../utils/Tutorials/auth";
+import { useAuth } from "../../utils/Tutorials/auth";
 import API from "../../utils/Tutorials/api";
 
 function Login() {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import API from "../utils/api";
-import "../assets/styles/ManageBook.css";
-import Navbar from "../components/Navbar";
+import API from "../../utils/Tutorials/api";
+import "../../styles/Tutorials/ManageBook.css";
+import Navbar from "../../components/Tutorials/Navbar";
 
 function ManageBookingPage() {
   const [bookings, setBookings] = useState([]);

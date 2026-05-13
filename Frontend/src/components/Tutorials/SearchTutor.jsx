@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/Tutorials/SearchTutor.css";
 import { useSearchParams } from "react-router-dom";
-import study2 from "../assets/images/study2.jpg";
+import study2 from "../../assets/images/study2.jpg";
 import PropTypes from "prop-types";
 
 /** * This module handles the search query for tutors

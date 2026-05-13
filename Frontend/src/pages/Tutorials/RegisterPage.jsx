@@ -1,8 +1,8 @@
 import React from "react";
-import Register from "../components/Register";
-import Navbar from "../components/Navbar";
-import blackboard from "../assets/images/blackboard.png";
-import "../assets/styles/Register.css";
+import Register from "../../components/Tutorials/Register";
+import Navbar from "../../components/Tutorials/Navbar";
+import blackboard from "../../assets/images/blackboard.png";
+import "../../styles/Tutorials/Register.css";
 
 /**
  * Register Page component

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import Navbar from "../components/Navbar";
-import "../assets/styles/EditProfile.css";
-import bulb2 from "../assets/images/bulb2.png";
+import Navbar from "../../components/Tutorials/Navbar";
+import "../../styles/Tutorials/EditProfile.css";
+import bulb2 from "../../assets/images/bulb2.png";
 import { useNavigate } from "react-router-dom";
 
 // ✅ API FUNCTIONS
@@ -10,9 +10,9 @@ import {
   editTutorProfile,
   uploadTutorProfilePic,
   deleteTutorProfilePic,
-} from "../utils/api";
+} from "../../utils/Tutorials/api";
 
-import { BASE_URL } from "../utils/api";
+import { BASE_URL } from "../../utils/Tutorials/api";
 
 function TutorEditProfilePage() {
   const navigate = useNavigate();

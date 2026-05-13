@@ -4,7 +4,7 @@ import "../../styles/Tutorials/Profile.css";
 import { AiOutlineMail, AiOutlineSchedule } from "react-icons/ai";
 import { FaRegCalendarCheck } from "react-icons/fa";
 import { MdOutlineFreeCancellation } from "react-icons/md";
-import bulb2 from "../assets/images/bulb2.png";
+import bulb2 from "../../assets/images/bulb2.png";
 
 function Profile() {
 const navigate = useNavigate();

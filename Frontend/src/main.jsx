@@ -12,21 +12,21 @@ import App from "./App";
 import { AuthProvider } from "./contexts/Attendance/AuthContext";
 
 // Tutorials Theme
-import { ThemeProvider } from "./utils/ThemeContext";
+import { ThemeProvider } from "./utils/Tutorials/ThemeContext";
 
 // ======================================================
 //                    COMPONENTS
 // ======================================================
 
-import ErrorBoundary from "./components/ErrorBoundary";
+import ErrorBoundary from "./components/Tutorials/ErrorBoundary";
 
 // ======================================================
 //                    GLOBAL STYLES
 // ======================================================
 
 // Tutorials Styles
-import "./assets/styles/LoginRegister.css";
-import "./assets/styles/Login.css";
+import "./styles/Tutorials/LoginRegister.css";
+import "./styles/Tutorials/Login.css";
 
 // Attendance Styles
 import "./styles/Attendance/main.css";

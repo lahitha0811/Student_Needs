@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../../styles/Tutorials/Navbar.css";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../utils/Tutorials/auth";
-import bulb2 from "../assets/images/bulb2.png";
+import bulb2 from "../../assets/images/bulb2.png";
 
 function Navbar() {
   const auth = useAuth();

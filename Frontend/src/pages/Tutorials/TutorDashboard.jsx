@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getTutorProfile } from "../utils/api";
-import Navbar from "../components/Navbar";
+import { getTutorProfile } from "../../utils/Tutorials/api";
+import Navbar from "../../components/Tutorials/Navbar";
 
-import "../assets/styles/TutorDashboard.css";
+import "../../styles/Tutorials/TutorDashboard.css";
 
 function TutorDashboard() {
   const navigate = useNavigate();

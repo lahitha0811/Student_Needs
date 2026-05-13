@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import API from "../utils/api";
-import "../assets/styles/TutorLogin.css";
-import "../assets/styles/TutorRegistration.css";
+import API from "../../utils/Tutorials/api";
+import "../../styles/Tutorials/TutorLogin.css";
+import "../../styles/Tutorials/TutorRegistration.css";
 import { useNavigate } from "react-router-dom";
-import blackboard from "../assets/images/blackboard.png";
+import blackboard from "../../assets/images/blackboard.png";
 
 function TutorRegisterPage() {
   const [step, setStep] = useState("form"); // "form" | "otp"

@@ -1,7 +1,7 @@
 import React from "react";
-import AccountSetting from "../components/AccountSetting";
-import Navbar from "../components/Navbar";
-import SideNav from "@/components/SideNav";
+import AccountSetting from "../../components/Tutorials/AccountSetting";
+import Navbar from "../../components/Tutorials/Navbar";
+import SideNav from "@/components/Tutorials/SideNav";
 
 function AccountSettingPage() {
   return (

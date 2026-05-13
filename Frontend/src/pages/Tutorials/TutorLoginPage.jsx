@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import API from "../utils/api";
+import API from "../../utils/Tutorials/api";
 
-import "../assets/styles/TutorLogin.css";
+import "../../styles/Tutorials/TutorLogin.css";
 import { useNavigate } from "react-router-dom";
-import blackboard from "../assets/images/blackboard.png";
+import blackboard from "../../assets/images/blackboard.png";
 
 function TutorLoginPage() {
   const [email, setEmail] = useState("");

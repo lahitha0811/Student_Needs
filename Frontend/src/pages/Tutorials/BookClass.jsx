@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import SearchTutor from "../components/SearchTutor";
-import "../assets/styles/BookClass.css";
-import "../assets/styles/BookModal.css";
-import TutorProfile from "../components/TutorProfile";
-import TutorInfo from "../components/TutorInfo";
+import Navbar from "../../components/Tutorials/Navbar";
+import SearchTutor from "../../components/Tutorials/SearchTutor";
+import "../../styles/Tutorials/BookClass.css";
+import "../../styles/Tutorials/BookModal.css";
+import TutorProfile from "../../components/Tutorials/TutorProfile";
+import TutorInfo from "../../components/Tutorials/TutorInfo";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import BookModal from "../components/BookModal";
-import { dateHelper } from "../utils/bookDates";
-import { useAuth } from "@/utils/auth";
-import TutorPagination from "../components/TutorPagination";
-import API, { getTutorAvailability } from "../utils/api";
+import BookModal from "../../components/Tutorials/BookModal";
+import { dateHelper } from "../../utils/Tutorials/bookDates";
+import { useAuth } from "@/utils/Tutorials/auth";
+import TutorPagination from "../../components/Tutorials/TutorPagination";
+import API, { getTutorAvailability } from "../../utils/Tutorials/api";
 
 function BookClass() {
   const [query, setQuery] = useState(null);

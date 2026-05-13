@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../../styles/Tutorials/EditProfile.css";
-import bulb2 from "../assets/images/bulb2.png";
+import bulb2 from "../../assets/images/bulb2.png";
 import { useNavigate } from "react-router-dom";
 
 // ✅ USE FUNCTIONS INSTEAD OF API
@@ -9,7 +9,7 @@ import {
   editProfile,
   uploadProfilePic,
   deleteProfilePic,
-} from "../utils/api";
+} from "../../utils/Tutorials/api";
 
 function EditProfile() {
   const navigate = useNavigate();

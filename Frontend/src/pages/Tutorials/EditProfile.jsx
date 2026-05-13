@@ -1,7 +1,7 @@
 import React from "react";
-import EditProfile from "../components/EditProfile";
-import Navbar from "../components/Navbar";
-import SideNav from "@/components/SideNav";
+import EditProfile from "../../components/Tutorials/EditProfile";
+import Navbar from "../../components/Tutorials/Navbar";
+import SideNav from "@/components/Tutorials/SideNav";
 
 function EditProfilePage() {
   return (

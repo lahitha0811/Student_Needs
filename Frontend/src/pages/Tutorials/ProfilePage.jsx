@@ -1,7 +1,7 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import SideNav from "@/components/SideNav";
-import Profile from "../components/Profile";
+import Navbar from "../../components/Tutorials/Navbar";
+import SideNav from "@/components/Tutorials/SideNav";
+import Profile from "../../components/Tutorials/Profile";
 
 function ProfilePage() {
   return (

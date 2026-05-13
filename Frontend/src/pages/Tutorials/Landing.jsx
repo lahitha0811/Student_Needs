@@ -1,7 +1,7 @@
 import React from "react";
-import "../assets/styles/Landing.css";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import "../../styles/Tutorials/Landing.css";
+import Navbar from "../../components/Tutorials/Navbar";
+import Footer from "../../components/Tutorials/Footer";
 import { NavLink } from "react-router-dom";
 
 function Landing() {

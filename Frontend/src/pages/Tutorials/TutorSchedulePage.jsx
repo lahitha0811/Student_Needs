@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../assets/styles/TutorSchedule.css";
-import teachingImg from "../assets/images/Teaching.jpg";
-import API, { getSchedule } from "../utils/api";
-import Navbar from "../components/Navbar";
+import "../../styles/Tutorials/TutorSchedule.css";
+import teachingImg from "../../assets/images/Teaching.jpg";
+import API, { getSchedule } from "../../utils/Tutorials/api";
+import Navbar from "../../components/Tutorials/Navbar";
 
 function TutorSchedulePage() {
   const [schedule, setSchedule] = useState([]);

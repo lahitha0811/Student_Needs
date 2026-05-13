@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import studyImg from "../assets/images/study2.jpg";
-import "../assets/styles/TutorAvailability.css";
+import studyImg from "../../assets/images/study2.jpg";
+import "../../styles/Tutorials/TutorAvailability.css";
 import { useNavigate } from "react-router-dom";
-import { saveTutorAvailability, getTutorProfile } from "../utils/api";
-import Navbar from "../components/Navbar";
+import { saveTutorAvailability, getTutorProfile } from "../../utils/Tutorials/api";
+import Navbar from "../../components/Tutorials/Navbar";
 
 function TutorAvailability() {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import SideNav from "@/components/SideNav";
-import ClassHistory from "../components/ClassHistory";
+import Navbar from "../../components/Tutorials/Navbar";
+import SideNav from "@/components/Tutorials/SideNav";
+import ClassHistory from "../../components/Tutorials/ClassHistory";
 
 function ClassHistoryPage() {
   return (

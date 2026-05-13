@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import API from "../utils/api";
+import API from "../../utils/Tutorials/api";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Tutorials/Navbar";
 
 function TutorAcceptPage() {
   const [bookings, setBookings] = useState([]);
