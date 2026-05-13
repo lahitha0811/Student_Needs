@@ -1,21 +1,55 @@
 import express from "express";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import logger from "morgan";
+import session from "express-session";
+import passport from "passport";
 import fileUpload from "express-fileupload";
+import path from "path";
 
-// ================= CONFIG =================
+import "./config/passport.js";
+
+// =====================================================
+//                    CONFIG IMPORTS
+// =====================================================
+
+// Tutorials DB
+import { connectDB } from "./db/Tutorials/connections.js";
+
+// Referral DB + Cloudinary
 import { dbconnect } from "./config/Referrals/database.js";
 import cloudinary from "./config/Referrals/cloudinary.js";
 
-// ================= ATTENDANCE ROUTES =================
+// =====================================================
+//                    TUTORIAL ROUTES
+// =====================================================
+
+import tutor from "./routes/Tutorials/tutors.js";
+import booking from "./routes/Tutorials/booking.js";
+import classHistory from "./routes/Tutorials/classHistory.js";
+import editProfile from "./routes/Tutorials/editProfile.js";
+import profile from "./routes/Tutorials/profile.js";
+import accountSetting from "./routes/Tutorials/accountSetting.js";
+import register from "./routes/Tutorials/register.js";
+import authTutorialRoutes from "./routes/Tutorials/auth.js";
+import tutorRoutes from "./routes/Tutorials/tutorRoutes.js";
+import uploadRoutes from "./routes/Tutorials/uploadRoutes.js";
+
+// =====================================================
+//                  ATTENDANCE ROUTES
+// =====================================================
+
 import authRoutes from "./routes/Attendance/authRoutes.js";
 import studentRoutes from "./routes/Attendance/studentRoutes.js";
 import subjectRoutes from "./routes/Attendance/subjectRoutes.js";
 import attendanceRoutes from "./routes/Attendance/attendanceRoutes.js";
 
-// ================= REFERRAL ROUTES =================
+// =====================================================
+//                  REFERRAL ROUTES
+// =====================================================
+
 import studentAuthRoutes from "./routes/Referrals/StudentAuthRoutes.js";
 import profileRoutes from "./routes/Referrals/StudentProfileRoutes.js";
 import resumeRoutes from "./routes/Referrals/StudentResumeRoutes.js";
@@ -31,16 +65,35 @@ import externalJobRoutes from "./routes/Referrals/ExternalJobRoutes.js";
 import interviewRoutes from "./routes/Referrals/InterviewRoutes.js";
 import profileAnalysisRoutes from "./routes/Referrals/ProfileAnalysisRoutes.js";
 
-// ================= ENV CONFIG =================
+// =====================================================
+//                    MIDDLEWARES
+// =====================================================
+
+import {
+  isAuthenticated,
+  isStudent,
+  isTutor,
+} from "./middleware/Tutorials/auth.js";
+
+// =====================================================
+//                    ENV CONFIG
+// =====================================================
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ================= MIDDLEWARE =================
+// =====================================================
+//                    MIDDLEWARE
+// =====================================================
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+
+app.use(logger("dev"));
 
 app.use(
   fileUpload({
@@ -49,17 +102,54 @@ app.use(
   })
 );
 
-// ================= CORS =================
+// =====================================================
+//                    STATIC FILES
+// =====================================================
+
+app.use("/uploads", express.static("uploads"));
+
+// =====================================================
+//                    SESSION CONFIG
+// =====================================================
+
+app.use(
+  session({
+    name: "connect.sid",
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    },
+  })
+);
+
+// =====================================================
+//                    PASSPORT
+// =====================================================
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// =====================================================
+//                    CORS CONFIG
+// =====================================================
+
 const allowedOrigins = [
-  // Attendance Frontend
+  // Tutorials
+  "http://localhost:5173",
+
+  // Attendance
   "http://localhost:3000",
   "https://attendancemonitoringsyst-b1ae8.web.app",
   "https://mern-attendance-app.onrender.com",
 
-  // Referral Frontend
+  // Referral
   "http://localhost:8080",
   "http://localhost:8081",
-  "http://localhost:5173",
   "http://127.0.0.1:8080",
   "http://127.0.0.1:8081",
   "http://127.0.0.1:5173",
@@ -83,14 +173,41 @@ app.use(
   })
 );
 
-// ================= HOME ROUTE =================
+// =====================================================
+//                    HOME ROUTE
+// =====================================================
+
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Unified Student Project API Running 🚀",
     timestamp: new Date().toISOString(),
   });
 });
+
+// =====================================================
+//                TUTORIAL MODULE ROUTES
+// =====================================================
+
+app.use("/api", authTutorialRoutes);
+
+app.use("/api/register", register);
+
+app.use("/api/tutors", tutor);
+
+app.use("/api/profile", profile);
+
+app.use("/api/edit-profile", editProfile);
+
+app.use("/api/account", accountSetting);
+
+app.use("/api/booking", booking);
+
+app.use("/api/history", classHistory);
+
+app.use("/api/tutor", tutorRoutes);
+
+app.use("/api/upload", uploadRoutes);
 
 // =====================================================
 //                ATTENDANCE MODULE ROUTES
@@ -132,33 +249,59 @@ app.use("/api/v1", interviewRoutes);
 
 app.use("/api/v1", profileAnalysisRoutes);
 
-// ================= DATABASE CONNECTION =================
+// =====================================================
+//                    404 HANDLER
+// =====================================================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// =====================================================
+//                GLOBAL ERROR HANDLER
+// =====================================================
+
+app.use((err, req, res, next) => {
+  console.error("🔥 Error:", err.stack);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+// =====================================================
+//                SERVER INITIALIZATION
+// =====================================================
 
 const initializeServer = async () => {
   try {
+    // Tutorials DB
+    await connectDB();
+    console.log("✅ Tutorials Database Connected");
 
-    // MongoDB Connection
+    // Referral DB
     await dbconnect();
-
-    console.log("✅ Database Connected");
+    console.log("✅ Referral Database Connected");
 
     // Cloudinary
     cloudinary.cloudinaryConnect();
-
     console.log("✅ Cloudinary Connected");
 
     // Start Server
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🚀 Unified Server running on port ${PORT}`);
     });
 
   } catch (error) {
-
     console.error("❌ Server Initialization Failed");
     console.error(error.message);
 
     process.exit(1);
   }
-};``
+};
 
 initializeServer();
