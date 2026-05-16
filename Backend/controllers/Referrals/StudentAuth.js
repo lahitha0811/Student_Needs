@@ -52,7 +52,7 @@ export const signup = async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
-      accountType: accountType || "Student",
+      accountType: accountType || "student",
       image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
     });
 

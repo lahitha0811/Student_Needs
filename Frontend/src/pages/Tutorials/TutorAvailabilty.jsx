@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import studyImg from "../../assets/images/study2.jpg";
 import "../../styles/Tutorials/TutorAvailability.css";
 import { useNavigate } from "react-router-dom";
-import { saveTutorAvailability, getTutorProfile } from "../../utils/Tutorials/api";
+import { saveTutorAvailability, getTutorProfile } from "@/services/api/tutorialsApi.js";
 import Navbar from "../../components/Tutorials/Navbar";
 
 function TutorAvailability() {
@@ -46,7 +46,7 @@ function TutorAvailability() {
 
   // ❌ Remove Subject
   const removeSubject = (sub) => {
-    setSubjects(subjects.filter((s) => s !== sub));
+    setSubjects(subjects?.filter((s) => s !== sub));
   };
 
   // ✅ Add Slot
@@ -66,7 +66,7 @@ function TutorAvailability() {
 
   // ❌ Remove Slot
   const removeSlot = (slot) => {
-    setSlots(slots.filter((s) => s !== slot));
+    setSlots(slots?.filter((s) => s !== slot));
   };
 
   // ✅ Submit
@@ -144,7 +144,7 @@ function TutorAvailability() {
                 </button>
 
                 <div className="tag-container">
-                  {subjects.map((sub, index) => (
+                  {subjects?.map((sub, index) => (
                     <span key={index} className="tag">
                       {sub}
 
@@ -198,7 +198,7 @@ function TutorAvailability() {
                 </button>
 
                 <div className="tag-container">
-                  {slots.map((slot, index) => (
+                  {slots?.map((slot, index) => (
                     <span key={index} className="tag">
                       {slot}
 

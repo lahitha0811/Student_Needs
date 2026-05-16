@@ -24,10 +24,11 @@ import { TooltipProvider } from "@/components/Referrals/ui/tooltip.jsx";
 // ======================================================
 
 import { ThemeProvider } from "@/contexts/Referrals/ThemeContext.jsx";
-import { AuthProvider as ReferralAuthProvider } from "@/services/Referrals/Auth/AuthContext.jsx";
 
-import { AuthProvider } from "./utils/Tutorials/auth";
-import { useAuth } from "./contexts/Attendance/AuthContext";
+// import { AuthProvider } from "./utils/Tutorials/auth";
+import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
+import ErrorBoundary from "@/components/ErrorBoundary.jsx";
+import NetworkFallback from "@/components/ui/NetworkFallback.jsx";
 
 // ======================================================
 //                    LENIS
@@ -40,7 +41,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 //                    ATTENDANCE
 // ======================================================
 
-import ProtectedRoute from "./components/Attendance/ProtectedRoute";
+import GlobalProtectedRoute from "@/components/GlobalProtectedRoute.jsx";
 
 import DashboardLayout from "./components/layouts/DashboardLayout";
 
@@ -61,10 +62,8 @@ const StudentDashboard = React.lazy(() => import("./pages/Attendance/StudentDash
 
 const Index = React.lazy(() => import("@/pages/Referrals/Index.jsx"));
 import {
-  ModuleOverviewPage,
   RoleAuthPage,
   RoleSelectionPage,
-  StudentOverviewDashboard,
   UnifiedLanding,
 } from "@/pages/UnifiedFlow.jsx";
 
@@ -82,7 +81,7 @@ import NotFound from "./pages/Tutorials/NotFound";
 import BookClass from "./pages/Tutorials/BookClass";
 import ManageBookingPage from "./pages/Tutorials/ManageBookingPage";
 import ClassHistoryPage from "./pages/Tutorials/ClassHistoryPage";
-import RequireAuth from "./components/Tutorials/RequireAuth";
+// Replaced by GlobalProtectedRoute
 import TutorLoginPage from "./pages/Tutorials/TutorLoginPage";
 import SelectRole from "./pages/Tutorials/SelectRole";
 import TutorRegisterPage from "./pages/Tutorials/TutorRegisterPage";
@@ -167,12 +166,16 @@ const AttendanceRoutes = () => {
       <Route path="/auth/alumni/signup" element={<Navigate to="/signup/alumni" replace />} />
       <Route path="/auth/verifier/login" element={<Navigate to="/login/verifier" replace />} />
       <Route path="/auth/verifier/signup" element={<Navigate to="/signup/verifier" replace />} />
-      <Route path="/student/dashboard" element={<StudentOverviewDashboard />} />
-      <Route path="/student/attendance" element={<Navigate to="/student-dashboard" replace />} />
-      <Route path="/student/expenses" element={<Navigate to="/expenses-tracker" replace />} />
-      <Route path="/modules" element={<ModuleOverviewPage />} />
-      <Route path="/teacher/dashboard" element={<TutorDashboard />} />
       <Route path="/alumni/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
+      <Route path="/student/dashboard" element={
+        <GlobalProtectedRoute allowedRoles={["student"]}>
+          <WithLayout title="My Dashboard">
+            <Suspense fallback={<DashboardSkeleton />}>
+              <StudentDashboard />
+            </Suspense>
+          </WithLayout>
+        </GlobalProtectedRoute>
+      } />
 
       {/* ======================================================
                         REFERRALS ROUTES
@@ -221,93 +224,82 @@ const AttendanceRoutes = () => {
       <Route
         path="/attendance/dashboard"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Dashboard">
               <Suspense fallback={<DashboardSkeleton />}>
                 <Dashboard />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/attendance/attendance"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Attendance">
               <Suspense fallback={<DashboardSkeleton />}>
                 <Attendance />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/attendance/add-student"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Add Student">
               <Suspense fallback={<DashboardSkeleton />}>
                 <AddStudent />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/attendance/remove-student"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Remove Student">
               <Suspense fallback={<DashboardSkeleton />}>
                 <RemoveStudent />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/attendance/add-subject"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Add Subject">
               <Suspense fallback={<DashboardSkeleton />}>
                 <AddSubject />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/attendance/reports"
         element={
-          <ProtectedRoute allowedRoles={["teacher"]}>
+          <GlobalProtectedRoute allowedRoles={["teacher"]}>
             <WithLayout title="Reports">
               <Suspense fallback={<DashboardSkeleton />}>
                 <Reports />
               </Suspense>
             </WithLayout>
-          </ProtectedRoute>
+          </GlobalProtectedRoute>
         }
       />
 
-      <Route
-        path="/student-dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["student"]}>
-            <WithLayout title="My Dashboard">
-              <Suspense fallback={<DashboardSkeleton />}>
-                <StudentDashboard />
-              </Suspense>
-            </WithLayout>
-          </ProtectedRoute>
-        }
-      />
+      {/* Duplicate /student-dashboard removed as per user request */}
 
       {/* ======================================================
                         TUTORIAL AUTH
@@ -370,7 +362,11 @@ const AttendanceRoutes = () => {
 
       <Route
         path="/tutorials/book"
-        element={<BookClass />}
+        element={
+          <DashboardLayout pageTitle="Book Class">
+            <BookClass />
+          </DashboardLayout>
+        }
       />
 
       {/* ======================================================
@@ -380,45 +376,55 @@ const AttendanceRoutes = () => {
       <Route
         path="/tutorials/profile"
         element={
-          <RequireAuth>
-            <Profile />
-          </RequireAuth>
+          <GlobalProtectedRoute>
+            <DashboardLayout pageTitle="Tutorial Profile">
+              <Profile />
+            </DashboardLayout>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/tutorials/profile/editProfile"
         element={
-          <RequireAuth>
-            <EditProfilePage />
-          </RequireAuth>
+          <GlobalProtectedRoute>
+            <DashboardLayout pageTitle="Edit Profile">
+              <EditProfilePage />
+            </DashboardLayout>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/tutorials/profile/manageBooking"
         element={
-          <RequireAuth>
-            <ManageBookingPage />
-          </RequireAuth>
+          <GlobalProtectedRoute>
+            <DashboardLayout pageTitle="Manage Bookings">
+              <ManageBookingPage />
+            </DashboardLayout>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/tutorials/profile/classHistory"
         element={
-          <RequireAuth>
-            <ClassHistoryPage />
-          </RequireAuth>
+          <GlobalProtectedRoute>
+            <DashboardLayout pageTitle="Class History">
+              <ClassHistoryPage />
+            </DashboardLayout>
+          </GlobalProtectedRoute>
         }
       />
 
       <Route
         path="/tutorials/profile/accountSettings"
         element={
-          <RequireAuth>
-            <AccountSettingPage />
-          </RequireAuth>
+          <GlobalProtectedRoute>
+            <DashboardLayout pageTitle="Account Settings">
+              <AccountSettingPage />
+            </DashboardLayout>
+          </GlobalProtectedRoute>
         }
       />
 
@@ -517,10 +523,10 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <ReferralAuthProvider>
-          <AuthProvider>
+        {/* Unified AuthProvider is now in main.jsx */}
             <TooltipProvider>
               {/* <BrowserRouter
                 future={{
@@ -545,7 +551,7 @@ function App() {
                     },
                   }}
                 />
-
+                <NetworkFallback />
                 <Toaster />
                 <Sonner />
 
@@ -556,10 +562,10 @@ function App() {
                 <AttendanceRoutes />
               {/* </BrowserRouter> */}
             </TooltipProvider>
-          </AuthProvider>
-        </ReferralAuthProvider>
+        {/* Unified AuthProvider is now in main.jsx */}
       </ThemeProvider>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

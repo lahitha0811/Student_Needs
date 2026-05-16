@@ -9,10 +9,12 @@ import passport from "passport";
 import fileUpload from "express-fileupload";
 import path from "path";
 import helmet from "helmet";
+import { v4 as uuidv4 } from "uuid";
 import rateLimit from "express-rate-limit";
 
 import { validateEnv } from "./config/envValidator.js";
 import { logger as winstonLogger } from "./utils/logger.js";
+import { initSocket } from "./sockets/index.js";
 
 import "./config/Tutorials/passport.js";
 
@@ -73,6 +75,7 @@ import applicationRoutes from "./routes/Referrals/ApplicationRoutes.js";
 import externalJobRoutes from "./routes/Referrals/ExternalJobRoutes.js";
 import interviewRoutes from "./routes/Referrals/InterviewRoutes.js";
 import profileAnalysisRoutes from "./routes/Referrals/ProfileAnalysisRoutes.js";
+import recommendationRoutes from "./routes/Referrals/RecommendationRoutes.js";
 
 // =====================================================
 //                  EXPENSE ROUTES
@@ -84,6 +87,10 @@ import budgetRouter from "./routes/Expenses/budgetRouter.js";
 import goalRouter from "./routes/Expenses/goalRouter.js";
 import analyticsRouter from "./routes/Expenses/analyticsRouter.js";
 import notificationRouter from "./routes/Expenses/notificationRouter.js";
+
+import adminRoutes from "./routes/adminRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 // =====================================================
 //                  EXPENSE SCHEDULERS
@@ -108,9 +115,19 @@ const PORT = process.env.PORT || 8000;
 //                    CORS CONFIG
 // =====================================================
 
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [process.env.FRONTEND_URL] 
+  : ['http://localhost:8080', 'http://localhost:5173', 'http://127.0.0.1:8080'];
+
 app.use(
   cors({
-    origin: true,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );
@@ -131,7 +148,8 @@ app.use((req, res, next) => {
 // =====================================================
 
 app.use(helmet({
-  crossOriginResourcePolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
 }));
 
 app.use(express.json());
@@ -144,7 +162,32 @@ app.use(
 
 app.use(cookieParser());
 
-app.use(morgan("combined", { stream: winstonLogger.stream }));
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  res.setHeader("X-Request-Id", req.id);
+  next();
+});
+
+morgan.token('id', function getId (req) { return req.id });
+app.use(morgan(':id :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"', { stream: winstonLogger.stream }));
+
+// =====================================================
+//             REQUEST TIMING & OBSERVABILITY
+// =====================================================
+
+app.use((req, res, next) => {
+  const start = process.hrtime();
+  res.on("finish", () => {
+    const diff = process.hrtime(start);
+    const time = (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(2);
+    if (time > 500) {
+      winstonLogger.warn(`SLOW REQUEST: ${req.method} ${req.originalUrl} - ${time}ms`);
+    } else {
+      winstonLogger.info(`Performance: ${req.method} ${req.originalUrl} - ${time}ms`);
+    }
+  });
+  next();
+});
 
 app.use(
   fileUpload({
@@ -185,8 +228,8 @@ app.use(
 
     cookie: {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
@@ -200,15 +243,32 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
+app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/analytics", analyticsRoutes);
+
 // =====================================================
 //                    HOME ROUTE
 // =====================================================
 
 app.get("/", (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStatus = {
+    0: "Disconnected",
+    1: "Connected",
+    2: "Connecting",
+    3: "Disconnecting"
+  };
+
   res.status(200).json({
     success: true,
     message: "Unified Student Project API Running 🚀",
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    health: {
+      database: dbStatus[dbState] || "Unknown",
+      memory: process.memoryUsage(),
+    }
   });
 });
 
@@ -277,6 +337,8 @@ app.use("/api/v1/student", externalJobRoutes);
 app.use("/api/v1", interviewRoutes);
 
 app.use("/api/v1", profileAnalysisRoutes);
+
+app.use("/api/v1", recommendationRoutes);
 
 // =====================================================
 //                EXPENSE MODULE ROUTES
@@ -353,9 +415,29 @@ const initializeServer = async () => {
     console.log("✅ Cloudinary Connected");
 
     // Start Server
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Unified Server running on port ${PORT}`);
     });
+
+    // Initialize WebSockets
+    initSocket(server);
+
+    const gracefulShutdown = () => {
+      console.log('SIGTERM/SIGINT signal received. Shutting down gracefully...');
+      server.close(async () => {
+        console.log('HTTP server closed.');
+        try {
+          await mongoose.disconnect();
+          console.log('MongoDB connection closed.');
+        } catch(e) {
+          console.error("Error closing MongoDB", e);
+        }
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
   } catch (error) {
     console.error("❌ Server Initialization Failed");
 

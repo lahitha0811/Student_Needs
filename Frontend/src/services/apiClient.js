@@ -21,6 +21,34 @@ export const createApiClient = (prefix = "") => {
     return config;
   });
 
+  client.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        console.warn("Session expired or unauthorized. Logging out...");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("User");
+        window.location.href = "/login/student";
+      }
+
+      // Retry logic for 5xx server errors or timeouts (idempotent requests only)
+      const config = error.config;
+      if (config && (!config.method || config.method.toLowerCase() === 'get')) {
+        config.__retryCount = config.__retryCount || 0;
+        if (config.__retryCount < 2 && (!error.response || error.response.status >= 500)) {
+          config.__retryCount += 1;
+          console.warn(`[API] Retrying request (${config.__retryCount}/2): ${config.url}`);
+          return new Promise(resolve => setTimeout(() => resolve(client(config)), 1000 * config.__retryCount));
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
+
   return client;
 };
 

@@ -1,6 +1,7 @@
 import Opportunity from "../../models/Referrals/OpportunityModel.js";
 import Alumni from "../../models/Referrals/AlumniModel.js";
-import Student from "../../models/Referrals/StudentModel.js"; // Moved from dynamic require
+import Student from "../../models/Referrals/StudentModel.js"; 
+import { embeddingService } from "../../services/ai/EmbeddingService.js";
 
 // Post Referral Opportunity
 export const createOpportunity = async (req, res) => {
@@ -63,6 +64,20 @@ export const createOpportunity = async (req, res) => {
             { path: 'postedBy', select: 'firstName lastName email company jobTitle' },
             { path: 'college', select: 'name matchingName' }
         ]);
+
+        // Generate embeddings asynchronously without blocking HTTP response
+        const textToEmbed = `
+            Job Title: ${opportunity.jobTitle}
+            Description: ${opportunity.roleDescription}
+            Experience: ${opportunity.experienceLevel}
+            Required Skills: ${(opportunity.requiredSkills || []).join(", ")}
+            Tags: ${(opportunity.tags || []).join(", ")}
+        `.trim();
+        embeddingService.generateEmbedding(textToEmbed)
+            .then(vector => {
+                Opportunity.updateOne({ _id: opportunity._id }, { $set: { embeddingVector: vector } }).exec();
+            })
+            .catch(console.error);
 
         return res.status(201).json({
             success: true,
@@ -128,6 +143,20 @@ export const updateOpportunity = async (req, res) => {
             { path: 'postedBy', select: 'firstName lastName email company jobTitle' },
             { path: 'college', select: 'name matchingName' }
         ]);
+
+        // Re-generate embeddings if opportunity changes
+        const textToEmbed = `
+            Job Title: ${opportunity.jobTitle}
+            Description: ${opportunity.roleDescription}
+            Experience: ${opportunity.experienceLevel}
+            Required Skills: ${(opportunity.requiredSkills || []).join(", ")}
+            Tags: ${(opportunity.tags || []).join(", ")}
+        `.trim();
+        embeddingService.generateEmbedding(textToEmbed)
+            .then(vector => {
+                Opportunity.updateOne({ _id: opportunity._id }, { $set: { embeddingVector: vector } }).exec();
+            })
+            .catch(console.error);
 
         return res.status(200).json({
             success: true,
@@ -218,8 +247,10 @@ export const getOpportunities = async (req, res) => {
         }
 
         if (!userCollege) {
-            return res.status(400).json({
-                success: false,
+            return res.status(200).json({
+                success: true,
+                count: 0,
+                data: [],
                 message: "User must be associated with a college",
             });
         }

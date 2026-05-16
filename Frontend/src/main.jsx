@@ -10,8 +10,8 @@ import reportWebVitals from "./reportWebVitals";
 //                    PROVIDERS
 // ======================================================
 
-// Attendance Auth
-import { AuthProvider } from "./contexts/Attendance/AuthContext";
+// Global Auth
+import { AuthProvider } from "./contexts/GlobalAuthContext";
 
 // Tutorials Theme
 import { ThemeProvider } from "./utils/Tutorials/ThemeContext";
@@ -20,7 +20,7 @@ import { ThemeProvider } from "./utils/Tutorials/ThemeContext";
 //                    COMPONENTS
 // ======================================================
 
-import ErrorBoundary from "./components/Tutorials/ErrorBoundary";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // ======================================================
 //                    GLOBAL STYLES

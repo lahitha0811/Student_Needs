@@ -1,7 +1,7 @@
 // Custom Authentication Hooks
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext.jsx';
+import { useAuth } from '@/contexts/GlobalAuthContext.jsx';
 
 // ============================================
 // Form State Hook
@@ -186,7 +186,6 @@ const handleSubmit = useCallback(async () => {
   try {
     const response = await studentLogin(form.data);
 
-    console.log("LOGIN RESPONSE:", response);
 
     if (response.success) {
 

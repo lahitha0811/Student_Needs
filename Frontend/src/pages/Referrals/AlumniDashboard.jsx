@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/services/Referrals/Auth/AuthContext.jsx';
+import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
 import { Button } from '@/components/Referrals/ui/button.jsx';
 import { cn } from '@/lib/Referrals/utils.js';
 import { showToast, dismissToast } from '@/components/Referrals/TransactionToast.jsx';
@@ -457,7 +457,7 @@ export function AlumniDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-2 sm:space-y-3 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
-                        {selectedOpportunityApplications.map((application) => (
+                        {selectedOpportunityApplications?.map((application) => (
                           <ApplicationCard
                             key={application._id}
                             application={application}

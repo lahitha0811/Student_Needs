@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../contexts/Attendance/AuthContext";
+import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
 import API from "../../services/Attendance/api";
 import { MdCheckCircle, MdCancel, MdWarning, MdCalendarToday, MdPerson } from "react-icons/md";
 import { DashboardSection } from "../../components/dashboard/shared/DashboardSection";
@@ -8,29 +8,68 @@ import { MetricCard } from "../../components/dashboard/shared/MetricCard";
 import { CGPAProgressionChart } from "../../components/dashboard/student/CGPAProgressionChart";
 import { ExpenseBreakdownChart } from "../../components/dashboard/student/ExpenseBreakdownChart";
 import { UpcomingTasks } from "../../components/dashboard/student/UpcomingTasks";
-import { MOCK_CGPA_DATA, MOCK_EXPENSE_DATA, MOCK_UPCOMING_TASKS } from "../../data/dashboard/studentMockData";
+import { RecommendedOpportunities } from "../../components/dashboard/student/RecommendedOpportunities";
+import { apiClient } from "@/services/apiClient";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
+  
+  // Required exact state from user prompt
   const [attendanceData, setAttendanceData] = useState([]);
+  const [expenseData, setExpenseData] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [cgpaData, setCgpaData] = useState([]); // Adding cgpaData for the progression chart
   const [loading, setLoading] = useState(true);
+  
+  const { on } = useWebSocket();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => { fetchAttendance(); }, []);
+  useEffect(() => { 
+    fetchDashboardData();
+  }, []);
 
-  const fetchAttendance = async () => {
+  useEffect(() => {
+    on("dashboard_refresh", () => {
+      fetchDashboardData();
+      setRefreshTrigger(prev => prev + 1);
+    });
+  }, [on]);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      const { data } = await API.get("/attendance/student");
-      setAttendanceData(data);
-    } catch (error) {
-      console.error("Error fetching attendance:", error);
+      // Fetch attendance
+      try {
+        const attRes = await API.get("/attendance/student");
+        if (attRes.data) setAttendanceData(attRes.data);
+      } catch (err) {
+        console.error("Attendance fetch error:", err);
+        setAttendanceData([]);
+      }
+
+      // Fetch unified analytics (including cgpa, expenses, upcoming, activity)
+      try {
+        const res = await apiClient.get("/api/analytics/student-dashboard");
+        if (res.data?.success && res.data?.data) {
+          const d = res.data.data;
+          setExpenseData(d.expenseData || []);
+          setUpcomingClasses(d.upcomingTasks || d.upcomingClasses || []);
+          setRecentActivity(d.recentActivity || []);
+          setCgpaData(d.cgpaData || []);
+        }
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const stats = React.useMemo(() => {
-    const total = attendanceData.length;
-    const present = attendanceData.filter((a) => a.attendance === "present").length;
+    const total = attendanceData?.length || 0;
+    const present = attendanceData?.filter((a) => a?.attendance === "present")?.length || 0;
     const absent = total - present;
     const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
     return { total, present, absent, percentage };
@@ -38,31 +77,26 @@ const StudentDashboard = () => {
 
   const subjectStats = React.useMemo(() => {
     const map = {};
-    attendanceData.forEach((r) => {
+    attendanceData?.forEach((r) => {
+      if (!r?.subject) return;
       if (!map[r.subject]) map[r.subject] = { total: 0, present: 0 };
       map[r.subject].total++;
       if (r.attendance === "present") map[r.subject].present++;
     });
-    return Object.entries(map).map(([subject, s]) => ({
+    return Object.entries(map)?.map(([subject, s]) => ({
       subject,
       percentage: ((s.present / s.total) * 100).toFixed(1),
       present: s.present,
       total: s.total,
-    }));
+    })) || [];
   }, [attendanceData]);
 
   const lowAttendance = React.useMemo(() => 
-    subjectStats.filter((s) => parseFloat(s.percentage) < 75), 
+    subjectStats?.filter((s) => parseFloat(s.percentage) < 75) || [], 
   [subjectStats]);
 
-  const getBarColor = (pct) => {
-    if (pct >= 75) return "green";
-    if (pct >= 60) return "amber";
-    return "red";
-  };
-
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? user.name.split(" ")?.map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "S";
 
   if (loading) {
@@ -89,11 +123,11 @@ const StudentDashboard = () => {
       </div>
 
       {/* Low Attendance Warning */}
-      {lowAttendance.length > 0 && (
+      {lowAttendance?.length > 0 && (
         <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 flex items-center gap-3">
           <MdWarning size={20} className="shrink-0" />
           <span className="text-sm font-medium">
-            Low attendance in: {lowAttendance.map((s) => s.subject).join(", ")}. Minimum required is 75%.
+            Low attendance in: {lowAttendance?.map((s) => s.subject).join(", ")}. Minimum required is 75%.
           </span>
         </div>
       )}
@@ -134,15 +168,23 @@ const StudentDashboard = () => {
       {/* Charts & Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <DashboardCard title="CGPA Progression" description="Your academic performance over time">
-            <CGPAProgressionChart data={MOCK_CGPA_DATA} />
-          </DashboardCard>
+          {cgpaData?.length > 0 ? (
+            <DashboardCard title="CGPA Progression" description="Your academic performance over time">
+              <CGPAProgressionChart data={cgpaData} />
+            </DashboardCard>
+          ) : (
+            <DashboardCard title="CGPA Progression" description="Your academic performance over time">
+              <div className="flex h-48 items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-secondary/20">
+                No grading data available.
+              </div>
+            </DashboardCard>
+          )}
 
           {/* Subject-wise Attendance */}
-          {subjectStats.length > 0 && (
+          {subjectStats?.length > 0 && (
             <DashboardCard title="Subject-wise Attendance" description="Detailed breakdown by course">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                {subjectStats.map((s, i) => {
+                {subjectStats?.map((s, i) => {
                   const pct = parseFloat(s.percentage);
                   return (
                     <div key={i} className="p-4 rounded-lg border border-border bg-slate-50 dark:bg-slate-900/50">
@@ -170,12 +212,48 @@ const StudentDashboard = () => {
         </div>
 
         <div className="space-y-6">
-          <DashboardCard title="Upcoming Tasks" description="Due assignments and quizzes">
-            <UpcomingTasks tasks={MOCK_UPCOMING_TASKS} />
+          <DashboardCard title="AI Recommended Opportunities" description="Based on your profile and skills">
+            <RecommendedOpportunities refreshTrigger={refreshTrigger} />
+          </DashboardCard>
+
+          <DashboardCard title="Upcoming Classes" description="Due assignments and scheduled classes">
+            {upcomingClasses?.length > 0 ? (
+              <UpcomingTasks tasks={upcomingClasses} />
+            ) : (
+              <div className="flex h-32 items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-secondary/20 text-sm">
+                No upcoming classes.
+              </div>
+            )}
+          </DashboardCard>
+
+          <DashboardCard title="Recent Activity" description="Your latest platform actions">
+            {recentActivity?.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity?.map((activity, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <div>
+                      <p className="text-sm font-medium">{activity.title || "Action recorded"}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time || "Recently"}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex h-32 items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-secondary/20 text-sm">
+                No recent activity.
+              </div>
+            )}
           </DashboardCard>
           
           <DashboardCard title="Expenses" description="Monthly spending breakdown">
-            <ExpenseBreakdownChart data={MOCK_EXPENSE_DATA} />
+            {expenseData?.length > 0 ? (
+              <ExpenseBreakdownChart data={expenseData} />
+            ) : (
+              <div className="flex h-48 items-center justify-center text-muted-foreground border border-dashed border-border rounded-lg bg-secondary/20 text-sm">
+                No expenses logged this month.
+              </div>
+            )}
           </DashboardCard>
         </div>
       </div>

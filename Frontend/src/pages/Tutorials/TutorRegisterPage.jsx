@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API from "../../utils/Tutorials/api";
+import API from "@/services/api/tutorialsApi.js";
 import "../../styles/Tutorials/TutorLogin.css";
 import "../../styles/Tutorials/TutorRegistration.css";
 import { useNavigate } from "react-router-dom";

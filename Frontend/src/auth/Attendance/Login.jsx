@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/Attendance/AuthContext";
+import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
 import toast from "react-hot-toast";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { MdOutlineSchool } from "react-icons/md";

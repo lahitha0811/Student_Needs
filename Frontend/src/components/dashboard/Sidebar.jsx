@@ -19,10 +19,10 @@ const Sidebar = ({ className, role = "student" }) => {
   // For now, these are standard module links.
   const links = [
     { name: "Dashboard", href: `/${role}/dashboard`, icon: LayoutDashboard },
-    { name: "Attendance", href: `/${role}/attendance`, icon: CalendarDays },
-    { name: "Expenses", href: `/${role}/expenses`, icon: CreditCard },
+    { name: "Attendance", href: `/${role}/dashboard`, icon: CalendarDays }, // Merged into Dashboard
+    { name: "Expenses", href: `/expenses-tracker`, icon: CreditCard },
     { name: "Tutorials", href: `/tutorials`, icon: BookOpen },
-    { name: "Referrals", href: `/referrals`, icon: Briefcase },
+    { name: "Referrals", href: `/student/referrals`, icon: Briefcase }, // Referrals specific route
   ];
 
   return (
@@ -42,7 +42,7 @@ const Sidebar = ({ className, role = "student" }) => {
       </div>
 
       <nav className="flex-1 space-y-1">
-        {links.map((link) => {
+        {links?.map((link) => {
           const isActive = location.pathname.startsWith(link.href);
           const Icon = link.icon;
           return (
@@ -65,7 +65,7 @@ const Sidebar = ({ className, role = "student" }) => {
 
       <div className="mt-auto space-y-1 pt-4 border-t border-border">
         <Link
-          to={`/${role}/settings`}
+          to={`/tutorials/profile/accountSettings`}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-secondary-foreground transition-colors"
         >
           <Settings className="w-4 h-4" />

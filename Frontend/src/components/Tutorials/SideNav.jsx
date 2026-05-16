@@ -8,7 +8,7 @@ function SideNav() {
     <div role="complementary">
       <div className="sidenav">
         <ul className="sidenav__list">
-          {sidebarData.map((item, index) => {
+          {sidebarData?.map((item, index) => {
             return (
               <li key={index} className={item.cName}>
                 <Link to={item.path}>

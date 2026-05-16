@@ -8,9 +8,9 @@ import TutorInfo from "../../components/Tutorials/TutorInfo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import BookModal from "../../components/Tutorials/BookModal";
 import { dateHelper } from "../../utils/Tutorials/bookDates";
-import { useAuth } from "@/utils/Tutorials/auth";
+import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
 import TutorPagination from "../../components/Tutorials/TutorPagination";
-import API, { getTutorAvailability } from "../../utils/Tutorials/api";
+import API, { getTutorAvailability } from "@/services/api/tutorialsApi.js";
 
 function BookClass() {
   const [query, setQuery] = useState(null);
@@ -113,7 +113,7 @@ function BookClass() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const availableSlots = (res.data.schedule || []).filter((slot) => {
+        const availableSlots = (res.data.schedule || [])?.filter((slot) => {
           const slotDate = new Date(slot.date);
           return slotDate >= today && !slot.isBooked;
         });
