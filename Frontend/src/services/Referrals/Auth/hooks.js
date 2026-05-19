@@ -441,12 +441,9 @@ export function useVerifierSignup() {
 
     form.setSubmitting(true);
     try {
-      const response = await studentSignup(form.data);
+      const response = await studentSignup({ ...form.data, accountType: 'verifier' });
       if (response.success && response.user) {
-        // Override accountType to Verifier for verifier signup
-        const verifierUser = { ...response.user, accountType: 'Verifier' };
-        // Update context with verifier user
-        setUser(verifierUser);
+        setUser(response.user);
         form.resetForm();
         navigate('/verifier');
       } else {
@@ -506,10 +503,19 @@ export function useVerifierLogin() {
     try {
       const response = await studentLogin(form.data);
       if (response.success && response.user) {
-        // Override accountType to Verifier for verifier login
-        const verifierUser = { ...response.user, accountType: 'Verifier' };
-        // Update context with verifier user
-        setUser(verifierUser);
+        const userRole = (response.user.role || response.user.accountType || "").toLowerCase();
+        if (userRole !== 'verifier') {
+          // Revert the global login state since this is not a verifier
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('auth_data');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+          setUser(null);
+          form.setSubmitError('Unauthorized. Only verifier accounts can access this portal.');
+          return { success: false, message: 'Unauthorized access' };
+        }
+        setUser(response.user);
         form.resetForm();
         navigate('/verifier');
       } else {
