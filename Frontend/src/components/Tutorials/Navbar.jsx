@@ -7,7 +7,7 @@ import { LayoutContext } from "../layouts/DashboardLayout";
 
 function Navbar() {
   const isNested = useContext(LayoutContext);
-  const auth = useAuth();
+  const { user, logout, isAuthenticated, isInitialized, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,7 +31,7 @@ function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    auth.logout();
+    logout();
   };
 
   const navClass = navColor
@@ -98,7 +98,7 @@ function Navbar() {
         </NavLink>
       </li>
 
-      {auth.user?.role === "student" && (
+      {(user?.role === "student" || user?.accountType === "student") && (
         <li>
           <NavLink className="nav-link" to="/tutorials/profile">
             My Profile
@@ -111,7 +111,7 @@ function Navbar() {
 
         {/* RIGHT BUTTON */}
         <div className="rightSection">
-          {auth.user || isTutorRoute ? (
+          {user || isTutorRoute ? (
             <button className="loginBtn" onClick={handleLogout}>
               Logout
             </button>

@@ -44,7 +44,9 @@ router.post("/register/request-otp", async (req, res) => {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = String(
+      Math.floor(100000 + Math.random() * 900000)
+    );
     const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     otpStore[email] = { otp, expires, name, password };
@@ -97,9 +99,30 @@ router.post("/register/verify-otp", async (req, res) => {
       return res.status(400).json({ message: "OTP expired. Please request again." });
     }
 
-    if (record.otp !== otp) {
+    const normalizeOTP = (value) =>
+      String(value).trim();
+
+    console.log(
+      "Stored OTP:",
+      typeof record.otp,
+      record.otp
+    );
+
+    console.log(
+      "Incoming OTP:",
+      typeof otp,
+      otp
+    );
+
+    if (
+      normalizeOTP(record.otp) !==
+      normalizeOTP(otp)
+    ) {
       console.warn(`[Tutor OTP] Verification failed: Invalid OTP entered for email: ${email}. Expected: ${record.otp}, Entered: ${otp}`);
-      return res.status(400).json({ message: "Invalid OTP" });
+      return res.status(400).json({
+        success: false,
+        msg: "Invalid OTP"
+      });
     }
 
     console.log(`[Tutor OTP] OTP successfully verified for email: ${email}. Creating tutor database record.`);

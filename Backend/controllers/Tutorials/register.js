@@ -79,9 +79,16 @@ export const verifyOtpAndRegister = async (req, res) => {
       });
     }
 
-    if (otp !== pending.otp) {
+    const normalizeOTP = (value) =>
+      String(value).trim();
+
+    if (
+      normalizeOTP(pending.otp) !==
+      normalizeOTP(otp)
+    ) {
       return res.status(400).json({
-        message: "Invalid OTP",
+        success: false,
+        msg: "Invalid OTP"
       });
     }
 

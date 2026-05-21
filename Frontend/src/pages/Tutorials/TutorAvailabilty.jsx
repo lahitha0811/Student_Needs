@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import studyImg from "../../assets/images/study2.jpg";
 import "../../styles/Tutorials/TutorAvailability.css";
 import { useNavigate } from "react-router-dom";
-import { saveTutorAvailability, getTutorProfile } from "@/services/api/tutorialsApi.js";
+import { saveTutorAvailability } from "@/services/api/tutorialsApi.js";
 import Navbar from "../../components/Tutorials/Navbar";
 
 function TutorAvailability() {
@@ -14,24 +14,6 @@ function TutorAvailability() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [slots, setSlots] = useState([]);
-
-  useEffect(() => {
-    const fetchTutorProfile = async () => {
-      try {
-        const res = await getTutorProfile();
-
-        if (!res.data?.profile) {
-          navigate("/login/tutor");
-          return;
-        }
-      } catch (err) {
-        console.error("Not authenticated");
-        navigate("/login/tutor");
-      }
-    };
-
-    fetchTutorProfile();
-  }, [navigate]);
 
   // ✅ Add Subject
   const addSubject = () => {

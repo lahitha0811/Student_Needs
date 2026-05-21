@@ -382,7 +382,7 @@ export default function InterviewPage() {
       addLog('✓ Application submitted successfully!');
       
       setTimeout(() => {
-        navigate('/student?tab=applied');
+        navigate('/student/applied');
       }, 2000);
     } catch (error) {
       addLog(`Error submitting application: ${error.message}`);

@@ -15,21 +15,8 @@ function TutorDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const check = async () => {
-      try {
-        const res = await getTutorProfile();
-
-        if (!res.data?.profile) {
-          navigate("/login/tutor");
-        }
-      } catch {
-        navigate("/login/tutor");
-      }
-    };
-
-    check();
     fetchAnalytics();
-  }, [navigate]);
+  }, []);
 
   const { on } = useWebSocket();
   const [analytics, setAnalytics] = useState({ recentRequests: [], activityTimeline: [] });

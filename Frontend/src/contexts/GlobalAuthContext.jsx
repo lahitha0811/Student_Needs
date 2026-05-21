@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -24,9 +25,10 @@ export const AuthProvider = ({ children }) => {
         const storedToken = localStorage.getItem('token') || localStorage.getItem('auth_token');
         const storedUser = localStorage.getItem('user') || localStorage.getItem('User') || localStorage.getItem('auth_user');
         
+        let resolvedRole = null;
         if (storedToken && storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          const resolvedRole = (parsedUser.role || parsedUser.accountType || "student").toLowerCase();
+          resolvedRole = (parsedUser.role || parsedUser.accountType || "student").toLowerCase();
           const normalizedUser = {
             ...parsedUser,
             role: resolvedRole,
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }) => {
           if (referralAuth) {
              const parsed = JSON.parse(referralAuth);
              if (parsed.token && parsed.user) {
-                const resolvedRole = (parsed.user.role || parsed.user.accountType || "student").toLowerCase();
+                resolvedRole = (parsed.user.role || parsed.user.accountType || "student").toLowerCase();
                 const normalizedUser = {
                   ...parsed.user,
                   role: resolvedRole,
@@ -64,11 +66,14 @@ export const AuthProvider = ({ children }) => {
              }
           }
         }
-        await fetchUser();
+        if (resolvedRole && ['student', 'tutor', 'teacher'].includes(resolvedRole)) {
+          await fetchUser();
+        }
       } catch (err) {
         console.error("Failed to parse user data", err);
       } finally {
         setLoading(false);
+        setIsInitialized(true);
       }
     };
     initializeAuth();
@@ -173,20 +178,28 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await tutorsApiClient.get("/user");
       if (data?.user) {
-        const resolvedRole = (data.user.role || data.user.accountType || "student").toLowerCase();
         const normalizedUser = {
           ...data.user,
-          role: resolvedRole,
-          accountType: resolvedRole
+          role: String(
+            data.user.role ||
+            data.user.accountType ||
+            ""
+          ).toLowerCase(),
+          accountType: String(
+            data.user.accountType ||
+            data.user.role ||
+            ""
+          ).toLowerCase(),
         };
         setUser(normalizedUser);
         localStorage.setItem('user', JSON.stringify(normalizedUser));
         localStorage.setItem('User', JSON.stringify(normalizedUser));
+        localStorage.setItem('auth_user', JSON.stringify(normalizedUser));
         
         let storedToken = localStorage.getItem('token') || localStorage.getItem('auth_token');
         if (!storedToken) {
           const header = btoa(JSON.stringify({ alg: "none", typ: "JWT" }));
-          const payload = btoa(JSON.stringify({ id: normalizedUser._id || normalizedUser.id, role: resolvedRole }));
+          const payload = btoa(JSON.stringify({ id: normalizedUser._id || normalizedUser.id, role: normalizedUser.role }));
           storedToken = `${header}.${payload}.dummy_signature`;
           localStorage.setItem('token', storedToken);
           localStorage.setItem('auth_token', storedToken);
@@ -201,6 +214,8 @@ export const AuthProvider = ({ children }) => {
 
   const clearError = () => setError(null);
 
+  const userRole = (user?.role || user?.accountType || "").toLowerCase();
+
   const value = {
     user,
     token,
@@ -208,12 +223,12 @@ export const AuthProvider = ({ children }) => {
     isLoading: loading,
     error,
     isAuthenticated: !!user,
-    isInitialized: true,
-    isTeacher: user?.role === 'teacher' || user?.role === 'tutor' || user?.accountType === 'tutor' || user?.accountType === 'teacher',
-    isStudent: user?.role === 'student' || user?.accountType === 'student',
-    isTutor: user?.role === 'tutor' || user?.accountType === 'tutor',
-    isAlumni: user?.role === 'alumni' || user?.accountType === 'alumni',
-    isVerifier: user?.role === 'verifier' || user?.accountType === 'verifier',
+    isInitialized,
+    isTeacher: userRole === 'teacher' || userRole === 'tutor',
+    isStudent: userRole === 'student',
+    isTutor: userRole === 'tutor',
+    isAlumni: userRole === 'alumni',
+    isVerifier: userRole === 'verifier',
     
     // Actions
     login,

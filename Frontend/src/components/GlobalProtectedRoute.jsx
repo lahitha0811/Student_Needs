@@ -30,18 +30,19 @@ export const GlobalProtectedRoute = ({
   }
 
   if (allowedRoles.length > 0) {
-    const rawRole = (user.role || user.accountType || "student").toLowerCase();
-    const userRole = rawRole === "tutor" ? "teacher" : rawRole;
+    const userRole = (
+      user?.role ||
+      user?.accountType ||
+      ""
+    ).toLowerCase();
 
-    const hasRole = allowedRoles.some((r) => {
-      const targetRole =
-        r.toLowerCase() === "tutor"
-          ? "teacher"
-          : r.toLowerCase();
+    console.log("USER:", user);
+    console.log("ROLE:", user?.role);
+    console.log("ACCOUNT TYPE:", user?.accountType);
+    console.log("ALLOWED ROLES:", allowedRoles);
 
-      return targetRole === userRole;
-    });
-    if (!hasRole) {
+    const hasAccess = allowedRoles.map((r) => r.toLowerCase()).includes(userRole);
+    if (!hasAccess) {
       return <Navigate to="/" replace />;
     }
   }

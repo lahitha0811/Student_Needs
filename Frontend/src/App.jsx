@@ -23,7 +23,7 @@ import { TooltipProvider } from "@/components/Referrals/ui/tooltip.jsx";
 //                    CONTEXTS
 // ======================================================
 
-import { ThemeProvider } from "@/contexts/Referrals/ThemeContext.jsx";
+// ThemeProvider is imported in main.jsx
 
 // import { AuthProvider } from "./utils/Tutorials/auth";
 import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
@@ -63,6 +63,8 @@ const StudentDashboard = React.lazy(() => import("./pages/Attendance/StudentDash
 const Index = React.lazy(() => import("@/pages/Referrals/Index.jsx"));
 const AlumniDashboard = React.lazy(() => import("@/pages/Referrals/AlumniDashboard.jsx").then(m => ({ default: m.AlumniDashboard })));
 const VerifierDashboard = React.lazy(() => import("@/pages/Referrals/VerifierDashboard.jsx").then(m => ({ default: m.VerifierDashboard })));
+const ReferralsStudentDashboard = React.lazy(() => import("@/pages/Referrals/StudentDashboard.jsx").then(m => ({ default: m.StudentDashboard })));
+const ReferralsInterviewPage = React.lazy(() => import("@/pages/Referrals/InterviewPage.jsx"));
 import {
   RoleAuthPage,
   RoleSelectionPage,
@@ -190,12 +192,13 @@ const AttendanceRoutes = () => {
         />
 
         {/* Referrals Routes */}
-        <Route path="/student/referrals/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
-        <Route path="/student/jobs/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
-        <Route path="/student/profile/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
-        <Route path="/student/qrcode/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
-        <Route path="/student/applied/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
-        <Route path="/student/interview/*" element={<Suspense fallback={<DashboardSkeleton />}><Index /></Suspense>} />
+        <Route path="/student/referrals" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsStudentDashboard /></Suspense>} />
+        <Route path="/student/jobs" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsStudentDashboard /></Suspense>} />
+        <Route path="/student/profile" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsStudentDashboard /></Suspense>} />
+        <Route path="/student/qrcode" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsStudentDashboard /></Suspense>} />
+        <Route path="/student/applied" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsStudentDashboard /></Suspense>} />
+        <Route path="/student/interview" element={<Suspense fallback={<DashboardSkeleton />}><ReferralsInterviewPage /></Suspense>} />
+        <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
 
         {/* Tutorials Student Routes */}
         <Route path="/tutorials/searchTutor" element={<Suspense fallback={<DashboardSkeleton />}><BookClass /></Suspense>} />
@@ -388,30 +391,22 @@ const AttendanceRoutes = () => {
                         TUTOR ROUTES
       ====================================================== */}
 
+      {/* ======================================================
+                        TUTOR SECURE ROUTES (SINGLE PERSISTENT LAYOUT)
+      ====================================================== */}
       <Route
-        path="/tutorials/tutor/dashboard"
-        element={<Suspense fallback={<DashboardSkeleton />}><TutorDashboard /></Suspense>}
-      />
-
-      <Route
-        path="/tutorials/tutor/availability"
-        element={<TutorAvailability />}
-      />
-
-      <Route
-        path="/tutorials/tutor/schedule"
-        element={<TutorSchedulePage />}
-      />
-
-      <Route
-        path="/tutorials/tutor/accept"
-        element={<TutorAcceptPage />}
-      />
-
-      <Route
-        path="/tutorials/tutor/editProfile"
-        element={<TutorEditProfilePage />}
-      />
+        element={
+          <GlobalProtectedRoute allowedRoles={["tutor"]}>
+            <DashboardLayout role="tutor" />
+          </GlobalProtectedRoute>
+        }
+      >
+        <Route path="/tutorials/tutor/dashboard" element={<Suspense fallback={<DashboardSkeleton />}><TutorDashboard /></Suspense>} />
+        <Route path="/tutorials/tutor/availability" element={<Suspense fallback={<DashboardSkeleton />}><TutorAvailability /></Suspense>} />
+        <Route path="/tutorials/tutor/schedule" element={<Suspense fallback={<DashboardSkeleton />}><TutorSchedulePage /></Suspense>} />
+        <Route path="/tutorials/tutor/accept" element={<Suspense fallback={<DashboardSkeleton />}><TutorAcceptPage /></Suspense>} />
+        <Route path="/tutorials/tutor/editProfile" element={<Suspense fallback={<DashboardSkeleton />}><TutorEditProfilePage /></Suspense>} />
+      </Route>
 
       {/* ======================================================
                         TUTORIAL LANDING
@@ -474,7 +469,6 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
           {/* Unified AuthProvider is now in main.jsx */}
           <TooltipProvider>
             {/* <BrowserRouter
@@ -511,8 +505,6 @@ function App() {
             <AttendanceRoutes />
             {/* </BrowserRouter> */}
           </TooltipProvider>
-          {/* Unified AuthProvider is now in main.jsx */}
-        </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

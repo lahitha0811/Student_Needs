@@ -13,8 +13,8 @@ import reportWebVitals from "./reportWebVitals";
 // Global Auth
 import { AuthProvider } from "./contexts/GlobalAuthContext";
 
-// Tutorials Theme
-import { ThemeProvider } from "./utils/Tutorials/ThemeContext";
+// Theme Provider
+import { ThemeProvider } from "./contexts/Referrals/ThemeContext";
 
 // ======================================================
 //                    COMPONENTS

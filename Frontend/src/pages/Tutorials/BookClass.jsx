@@ -35,13 +35,7 @@ function BookClass() {
     isInitialized,
   } = auth;
   const navigate = useNavigate();
-  useEffect(() => {
-    if (!isInitialized || isLoading) return;
 
-    if (!isAuthenticated) {
-      navigate("/login/student", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, isInitialized, navigate]);
 
   const handleQuery = (val, data, size) => {
     setQuery(val);
@@ -97,7 +91,10 @@ function BookClass() {
   useEffect(() => {
     const onBackButtonEvent = (evt) => {
       evt.preventDefault();
-      window.localStorage.clear();
+      window.localStorage.removeItem("Current_Query");
+      window.localStorage.removeItem("Current_Render");
+      window.localStorage.removeItem("Current_Data");
+      window.localStorage.removeItem("Current_Data_Size");
       setSearch(false);
       setQuery(null);
       setSearchData([]);

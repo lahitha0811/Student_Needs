@@ -18,22 +18,27 @@ function TutorLoginPage() {
     try {
       const res = await API.post("/tutor/login", { email, password });
 
-      // ✅ SUCCESS LOGIN
       if (res.data.status === "ok") {
         alert("Login successful ✅");
 
-        const tutorUser = {
+        const normalizedUser = {
           ...res.data.tutor,
           role: "tutor",
+          accountType: "tutor",
         };
 
         const header = btoa(JSON.stringify({ alg: "none", typ: "JWT" }));
-        const payload = btoa(JSON.stringify({ id: tutorUser._id || tutorUser.id, role: "tutor" }));
+        const payload = btoa(JSON.stringify({ id: normalizedUser._id || normalizedUser.id, role: "tutor" }));
         const dummyToken = `${header}.${payload}.dummy_signature`;
+        
         localStorage.setItem("token", dummyToken);
         localStorage.setItem("auth_token", dummyToken);
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
+        localStorage.setItem("User", JSON.stringify(normalizedUser));
+        localStorage.setItem("auth_user", JSON.stringify(normalizedUser));
+        localStorage.setItem("auth_data", JSON.stringify({ token: dummyToken, user: normalizedUser }));
 
-        auth.setUser(tutorUser);
+        auth.setUser(normalizedUser);
 
         setTimeout(() => {
           navigate("/tutorials/tutor/dashboard", { replace: true });

@@ -7,15 +7,16 @@ import { useAuth } from "@/contexts/GlobalAuthContext.jsx";
 import { useEffect } from "react";
 
 function Landing() {
-  const { isAuthenticated, isStudent, isTutor } = useAuth();
+  const { isAuthenticated, isStudent, isTutor, isInitialized, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!isInitialized || isLoading) return;
     if (isAuthenticated) {
       if (isTutor) navigate("/tutorials/tutor/dashboard", { replace: true });
       else if (isStudent) navigate("/tutorials/book", { replace: true });
     }
-  }, [isAuthenticated, isStudent, isTutor, navigate]);
+  }, [isAuthenticated, isStudent, isTutor, isInitialized, isLoading, navigate]);
 
   return (
     <div className="landingPage">

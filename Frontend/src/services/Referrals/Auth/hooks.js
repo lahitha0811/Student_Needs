@@ -2,6 +2,9 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/GlobalAuthContext.jsx';
+import { referralsApiClient } from '@/services/apiClient.js';
+import { AUTH_ENDPOINTS } from './config.js';
+import { showToast } from '@/components/Referrals/TransactionToast.jsx';
 
 // ============================================
 // Form State Hook
@@ -212,7 +215,7 @@ const initialLogin = {
 };
 
 export function useStudentLogin() {
-  const { studentLogin } = useAuth();
+  const { studentLogin, setUser } = useAuth();
   const navigate = useNavigate();
   const form = useAuthForm(initialLogin);
 
@@ -321,21 +324,23 @@ export function useStudentLogin() {
           response.data?.user;
 
         if (token) {
-          localStorage.setItem("auth_token", token);
           localStorage.setItem("token", token);
+          localStorage.setItem("auth_token", token);
         }
 
         if (user) {
+          const normalizedUser = {
+            ...user,
+            role: "student",
+            accountType: "student",
+          };
 
-          localStorage.setItem(
-            "auth_user",
-            JSON.stringify(user)
-          );
+          localStorage.setItem("user", JSON.stringify(normalizedUser));
+          localStorage.setItem("User", JSON.stringify(normalizedUser));
+          localStorage.setItem("auth_user", JSON.stringify(normalizedUser));
+          localStorage.setItem("auth_data", JSON.stringify({ token, user: normalizedUser }));
 
-          localStorage.setItem(
-            "user",
-            JSON.stringify(user)
-          );
+          setUser(normalizedUser);
         }
 
         form.resetForm();
@@ -545,7 +550,7 @@ const initialVerifierSignup = {
 };
 
 export function useVerifierSignup() {
-  const { studentSignup, setUser } = useAuth();
+  const { setUser } = useAuth();
   const navigate = useNavigate();
   const form = useAuthForm(initialVerifierSignup);
 
@@ -589,29 +594,44 @@ export function useVerifierSignup() {
 
     form.setSubmitting(true);
     try {
-      const response = await studentSignup({ ...form.data, accountType: 'verifier' });
-      if (response.success && response.user) {
-        // Clear global session since we want them to log in manually
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('auth_data');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        setUser(null);
+      const { data } = await referralsApiClient.post(AUTH_ENDPOINTS.student.signup, {
+        ...form.data,
+        accountType: 'verifier',
+      });
+
+      if (data.success) {
         form.resetForm();
-        navigate('/login/verifier');
+        showToast({
+          type: 'success',
+          message: 'Verifier signup successful!',
+          description: 'Please log in with your verifier account.'
+        });
+
+        // Clear stale auth localStorage keys
+        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('User');
+        localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_data');
+
+        setUser(null);
+
+        setTimeout(() => {
+          navigate('/login/verifier', { replace: true });
+        }, 100);
       } else {
-        form.setSubmitError(response.message);
+        form.setSubmitError(data.message || 'Signup failed');
       }
-      return response;
+      return data;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Signup failed';
+      const message = error?.response?.data?.message || error?.message || 'Signup failed';
       form.setSubmitError(message);
       return { success: false, message };
     } finally {
       form.setSubmitting(false);
     }
-  }, [form, studentSignup, setUser, navigate, validate]);
+  }, [form, setUser, navigate, validate]);
 
   return {
     ...form,
@@ -661,21 +681,53 @@ export function useVerifierLogin() {
         if (userRole !== 'verifier') {
           // Revert the global login state since this is not a verifier
           localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('auth_data');
           localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('User');
           localStorage.removeItem('auth_user');
+          localStorage.removeItem('auth_data');
           setUser(null);
           form.setSubmitError('Unauthorized. Only verifier accounts can access this portal.');
           return { success: false, message: 'Unauthorized access' };
         }
-        setUser(response.user);
+
+        // 1. Normalize verifier user
+        const normalizedUser = {
+          ...response.user,
+          role: "verifier",
+          accountType: "verifier",
+        };
+
+        const token = response.token || response.data?.token || localStorage.getItem('token') || localStorage.getItem('auth_token');
+
+        // 2. Persist ALL auth keys
+        if (token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('auth_token', token);
+        }
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        localStorage.setItem('User', JSON.stringify(normalizedUser));
+        localStorage.setItem('auth_user', JSON.stringify(normalizedUser));
+        localStorage.setItem('auth_data', JSON.stringify({ token, user: normalizedUser }));
+
+        // 3. Update auth context with normalized verifier user
+        setUser(normalizedUser);
+
+        // 4. Show success toast
+        showToast({
+          type: 'success',
+          message: 'Login successful!',
+          description: 'Welcome to your verifier dashboard.'
+        });
+
         form.resetForm();
+
+        // 5. Use delayed navigation
         setTimeout(() => {
-          navigate('/verifier/dashboard');
+          navigate('/verifier/dashboard', { replace: true });
         }, 100);
       } else {
-        form.setSubmitError(response.message);
+        form.setSubmitError(response.message || 'Login failed');
       }
       return response;
     } catch (error) {
