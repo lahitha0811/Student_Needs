@@ -226,15 +226,6 @@ const AttendanceRoutes = () => {
       />
       {/* <Route path="/modules" element={<ModuleOverviewPage />} /> */}
       <Route path="/teacher/dashboard" element={<TutorDashboard />} />
-      <Route
-        path="/alumni/dashboard"
-        element={
-          <Suspense fallback={<DashboardSkeleton />}>
-            <Index />
-          </Suspense>
-        }
-      />
-
       {/* ======================================================
                       UNIFIED STUDENT FLOW (SINGLE PERSISTENT LAYOUT)
       ====================================================== */}
@@ -273,22 +264,7 @@ const AttendanceRoutes = () => {
             </Suspense>
           }
         />
-        <Route
-          path="/alumni/*"
-          element={
-            <Suspense fallback={<DashboardSkeleton />}>
-              <Index />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/verifier/*"
-          element={
-            <Suspense fallback={<DashboardSkeleton />}>
-              <Index />
-            </Suspense>
-          }
-        />
+
         {/* Referrals */}
         <Route
           path="/student/referrals"
@@ -408,7 +384,16 @@ const AttendanceRoutes = () => {
           }
         />
 
-        {/* Expense Tracker Routes */}
+      </Route>
+
+      {/* Expense Tracker Routes */}
+      <Route
+        element={
+          <GlobalProtectedRoute allowedRoles={["student"]}>
+            <AppLayout />
+          </GlobalProtectedRoute>
+        }
+      >
         <Route
           path="/expenses-tracker"
           element={
@@ -446,30 +431,47 @@ const AttendanceRoutes = () => {
       {/* ======================================================
                         NON-STUDENT SECURE DASHBOARDS
       ====================================================== */}
+      {/* Alumni Protected Group */}
       <Route
-        path="/alumni/dashboard"
         element={
           <GlobalProtectedRoute allowedRoles={["alumni"]}>
+            <Outlet />
+          </GlobalProtectedRoute>
+        }
+      >
+        <Route
+          path="/alumni/dashboard"
+          element={
             <Suspense fallback={<DashboardSkeleton />}>
               <DashboardLayout role="alumni" pageTitle="Alumni Dashboard">
                 <AlumniDashboard />
               </DashboardLayout>
             </Suspense>
-          </GlobalProtectedRoute>
-        }
-      />
+          }
+        />
+        <Route path="/alumni/*" element={<Navigate to="/alumni/dashboard" replace />} />
+      </Route>
+
+      {/* Verifier Protected Group */}
       <Route
-        path="/verifier/dashboard"
         element={
           <GlobalProtectedRoute allowedRoles={["verifier"]}>
+            <Outlet />
+          </GlobalProtectedRoute>
+        }
+      >
+        <Route
+          path="/verifier/dashboard"
+          element={
             <Suspense fallback={<DashboardSkeleton />}>
               <DashboardLayout role="verifier" pageTitle="Verifier Dashboard">
                 <VerifierDashboard />
               </DashboardLayout>
             </Suspense>
-          </GlobalProtectedRoute>
-        }
-      />
+          }
+        />
+        <Route path="/verifier/*" element={<Navigate to="/verifier/dashboard" replace />} />
+      </Route>
       <Route
         path="/auth/*"
         element={
