@@ -10,17 +10,30 @@ function BookModal({
   tutorProfile,
   availability = [],
 }) {
-  if (!open) return null;
-
+  const [mounted, setMounted] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const profile = tutorProfile?.profile || {};
-  const tutorName = profile.fName || tutorProfile?.first_name || "Tutor";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
       setSelectedSlot(null);
     }
   }, [open, availability]);
+
+  if (!open) return null;
+  if (!mounted) return null;
+
+  const modalRoot = document.getElementById("modal-root");
+  if (!modalRoot) {
+    console.error("modal-root element not found in DOM");
+    return null;
+  }
+
+  const profile = tutorProfile?.profile || {};
+  const tutorName = profile.fName || tutorProfile?.first_name || "Tutor";
 
   const groupedSlots = availability.reduce((acc, slot) => {
     if (!acc[slot.date]) acc[slot.date] = [];
@@ -106,7 +119,7 @@ function BookModal({
         </div>
       </div>
     </div>,
-    document.getElementById("modal-root"),
+    modalRoot,
   );
 }
 

@@ -259,10 +259,27 @@ router.post("/availability", async (req, res) => {
 router.get("/schedule", async (req, res) => {
   try {
     // Support both tutor session and student Passport session
-    const tutorId = req.session?.user?.id;
-    const studentId = req.session?.passport?.user;
+    let tutorId = req.session?.user?.id;
+    let studentId = req.session?.passport?.user;
+    let resolvedRole = null;
 
-    if (tutorId && req.session.user.role === "tutor") {
+    if (!tutorId && !studentId && req.headers.authorization?.startsWith("Bearer")) {
+      try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "mySuperSecretKey123");
+        resolvedRole = (decoded.role || decoded.accountType || "student").toLowerCase();
+
+        if (resolvedRole === "tutor" || resolvedRole === "teacher") {
+          tutorId = decoded.id || decoded._id;
+        } else {
+          studentId = decoded.id || decoded._id;
+        }
+      } catch (e) {
+        console.error("JWT Decode error in schedule route:", e);
+      }
+    }
+
+    if (tutorId && (req.session?.user?.role === "tutor" || resolvedRole === "tutor" || resolvedRole === "teacher")) {
       const tutor = await Tutor.findById(tutorId);
       if (!tutor) return res.status(404).json({ message: "Tutor not found" });
 
