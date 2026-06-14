@@ -410,6 +410,8 @@ export default function ChatPage() {
       >
         <ChatWindow
           chat={activeChat}
+          socket={socket}
+          waitForSocket={waitForSocket}
           messages={messages}
           loadingMessages={loadingMessages}
           onSendMessage={handleSendMessage}
@@ -437,7 +439,7 @@ export default function ChatPage() {
 
       {/* Image Lightbox Preview Overlay */}
       {lightbox && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-50 p-6">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center z-50 p-6 gap-4">
           <div className="absolute top-4 right-4 flex gap-3 text-white">
             <a
               href={lightbox.url}

@@ -2,11 +2,36 @@
    GLOBAL THEME TOKENS — Student Needs Platform
    ====================================================== */
 
+:root {
+  --bg-main-page: #f4f1fb;        /* soft lavender canvas, was #ffffff/#f0f4f9 */
+  --bg-nav-container: #ffffff;     /* white cards/sidebar, was #f0f4f9 */
+  --bg-nav-hover: #ece6fb;          /* light purple hover, was #e1e6eb */
+  --text-primary: #1f1f1f;          /* unchanged */
+  --text-secondary: #6b6b6b;        /* unchanged-ish */
+  --nav-accent: #6c4cf1;            /* purple accent, was #1a73e8 */
+  --border-subtle: #e4def9;         /* lavender-tinted border, was #dde3ea */
+  --theme-transition:
+    background-color .3s ease,
+    color .3s ease,
+    border-color .3s ease,
+    box-shadow .3s ease;
+}
+
+[data-theme="dark"] {
+  --bg-main-page: #131314;
+  --bg-nav-container: #1e1f20;
+  --bg-nav-hover: #282a2c;
+  --text-primary: #e3e3e3;
+  --text-secondary: #c4c7c5;
+  --nav-accent: #7fc0ff;
+  --border-subtle: #444746;
+}
+
 :root,
-.light-theme {
-  /* Primary Accent: Muted Bronze */
-  --primary: #8C6239;
-  --primary-hover: #734e2c;
+[data-theme="light"] {
+  /* Primary Accent: Purple */
+  --primary: #6c4cf1;
+  --primary-hover: #5a3ddb;
   
   /* Semantic Status Colors (Light Theme) */
   --success: #2C6E49;
@@ -15,31 +40,27 @@
   --warning-bg: rgba(166, 124, 0, 0.08);
   --danger: #9B2226;
   --danger-bg: rgba(155, 34, 38, 0.08);
-  --info: #8C6239;
-  --info-bg: rgba(140, 98, 57, 0.08);
+  --info: #6c4cf1;
+  --info-bg: rgba(108, 76, 241, 0.08);
   --neutral: #5C6773;
   --neutral-bg: rgba(92, 103, 115, 0.08);
 
-  /* Surface System (Warm Ivory) */
-  --background: #FDFBF7;
-  --bg-primary: #FDFBF7;
-  --bg-secondary: #F5F1E6;
-  --card-bg: #FDFBF7;
-  --sidebar-bg: #F5F1E6;
-  --navbar-bg: #FDFBF7;
+  /* Surface System (Gemini Light) */
+  --background: var(--bg-main-page);
+  --bg-primary: var(--bg-main-page);
+  --bg-secondary: var(--bg-nav-container);
+  --card-bg: var(--bg-nav-container);
+  --sidebar-bg: var(--bg-nav-container);
+  --navbar-bg: var(--bg-nav-container);
 
-  /* Text System */
-  --text-primary: #1A2530;
-  --text-secondary: #4A5868;
-
-  /* Borders: Soft neutral tone */
-  --border-color: rgba(140, 98, 57, 0.18);
-  --border: rgba(140, 98, 57, 0.18);
-  --input: rgba(140, 98, 57, 0.18);
+  /* Borders: Subtle */
+  --border-color: var(--border-subtle);
+  --border: var(--border-subtle);
+  --input: var(--border-subtle);
 
   /* Shadows (Three-tier elevation/shadow system - Light Mode) */
   --elevation-1: 0 1px 3px rgba(26, 37, 48, 0.05);
-  --elevation-2: 0 8px 24px rgba(140, 98, 57, 0.06);
+  --elevation-2: 0 8px 24px rgba(108, 76, 241, 0.06);
   --elevation-3: 0 20px 40px rgba(26, 37, 48, 0.08);
   
   --shadow-sm: var(--elevation-1);
@@ -48,24 +69,24 @@
   --shadow-xl: var(--elevation-3);
 
   /* Centralized Typography Variables */
-  --text-heading: #1A2530;
-  --text-paragraph: #1A2530;
-  --text-label: #1A2530;
+  --text-heading: var(--text-primary);
+  --text-paragraph: var(--text-primary);
+  --text-label: var(--text-primary);
   --text-table: #1A2530;
   --text-input: #1A2530;
   --text-button: #FDFBF7;
-  --text-navbar: #1A2530;
-  --text-sidebar: #1A2530;
+  --text-navbar: var(--text-primary);
+  --text-sidebar: var(--text-primary);
   --text-placeholder: #7C8B9C;
-  --text-white: #ffffff;
+  --text-white: var(--bg-nav-container);
   --text-black: #1A2530;
 
   /* Glassmorphism system variables for light mode */
-  --glass-bg: rgba(253, 251, 247, 0.85);
+  --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-blur: blur(24px);
-  --glass-border: rgba(140, 98, 57, 0.22);
-  --glass-shadow: 0 8px 32px rgba(140, 98, 57, 0.04);
-  --card-border-gradient: linear-gradient(135deg, rgba(140, 98, 57, 0.2), transparent, rgba(140, 98, 57, 0.05));
+  --glass-border: rgba(108, 76, 241, 0.22);
+  --glass-shadow: 0 8px 32px rgba(108, 76, 241, 0.04);
+  --card-border-gradient: linear-gradient(135deg, rgba(108, 76, 241, 0.2), transparent, rgba(108, 76, 241, 0.05));
 
   /* Image controls */
   --image-filter: none;
@@ -73,13 +94,13 @@
 
   /* Sidebar configuration mapping */
   --sidebar-link-color: #4A5868;
+
 }
 
-.dark,
-.dark-theme {
-  /* Primary Accent: Soft Gold */
-  --primary: #C5A059;
-  --primary-hover: #D8B774;
+[data-theme="dark"] {
+  /* Primary Accent: Purple (brand-consistent with light mode) */
+  --primary: #9b7cf6;
+  --primary-hover: #b39bf9;
   
   /* Semantic Status Colors (Dark Theme) */
   --success: #469A6C;
@@ -88,32 +109,28 @@
   --warning-bg: rgba(235, 177, 52, 0.12);
   --danger: #E2585B;
   --danger-bg: rgba(226, 88, 91, 0.12);
-  --info: #C5A059;
-  --info-bg: rgba(197, 160, 89, 0.12);
+  --info: #9b7cf6;
+  --info-bg: rgba(155, 124, 246, 0.12);
   --neutral: #8390A1;
   --neutral-bg: rgba(131, 144, 161, 0.12);
 
-  /* Surface System (Deep Navy & Deep slate surface) */
-  --background: #0F1A24;
-  --bg-primary: #0F1A24;
-  --bg-secondary: #162431;
-  --card-bg: #162431;
-  --sidebar-bg: #162431;
-  --navbar-bg: #0F1A24;
+  /* Surface System (Gemini Dark) */
+  --background: var(--bg-main-page);
+  --bg-primary: var(--bg-main-page);
+  --bg-secondary: var(--bg-nav-container);
+  --card-bg: var(--bg-nav-container);
+  --sidebar-bg: var(--bg-nav-container);
+  --navbar-bg: var(--bg-nav-container);
 
-  /* Text System */
-  --text-primary: #EAE5DA;
-  --text-secondary: #B1B8C0;
-
-  /* Borders: Subtle transparent light borders */
-  --border-color: rgba(234, 229, 218, 0.22);
-  --border: rgba(234, 229, 218, 0.22);
-  --input: rgba(234, 229, 218, 0.22);
+  /* Borders: Subtle */
+  --border-color: var(--border-subtle);
+  --border: var(--border-subtle);
+  --input: var(--border-subtle);
 
   /* Shadows (Three-tier elevation/shadow system - Dark Mode) */
   --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.3);
   --elevation-2: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --elevation-3: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(197, 160, 89, 0.1);
+  --elevation-3: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(155, 124, 246, 0.1);
   
   --shadow-sm: var(--elevation-1);
   --shadow-md: var(--elevation-2);
@@ -121,14 +138,14 @@
   --shadow-xl: var(--elevation-3);
 
   /* Centralized Typography Variables */
-  --text-heading: #EAE5DA;
-  --text-paragraph: #EAE5DA;
-  --text-label: #EAE5DA;
+  --text-heading: var(--text-primary);
+  --text-paragraph: var(--text-primary);
+  --text-label: var(--text-primary);
   --text-table: #EAE5DA;
   --text-input: #EAE5DA;
   --text-button: #0F1A24;
-  --text-navbar: #EAE5DA;
-  --text-sidebar: #EAE5DA;
+  --text-navbar: var(--text-primary);
+  --text-sidebar: var(--text-primary);
   --text-placeholder: #626F7D;
   --text-white: #EAE5DA;
   --text-black: #0F1A24;
@@ -146,28 +163,27 @@
 
   /* Sidebar configuration mapping */
   --sidebar-link-color: #B1B8C0;
+
+  /* Shadcn UI Dark Mode Overrides (Defaults used for light mode) */
+  --foreground: #e3e3e3;
+  --muted-foreground: #c4c7c5;
+  --card: #1e1f20;
+  --card-foreground: #e3e3e3;
+  --popover: #1e1f20;
+  --popover-foreground: #e3e3e3;
+  --secondary: #282a2c;
+  --secondary-foreground: #e3e3e3;
+  --muted: #282a2c;
 }
 
 /* Theme transition adjustments */
 html {
-  transition: background-color var(--transition-normal) var(--ease-standard),
-              color var(--transition-normal) var(--ease-standard);
-  background-color: var(--bg-primary);
+  transition: var(--theme-transition);
+  background-color: var(--bg-main-page);
   color: var(--text-primary);
 }
 
 body {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Ensure clean themes apply to specific wrapper nodes */
-.light-theme, .light {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-}
-
-.dark-theme, .dark {
-  background-color: var(--bg-primary) !important;
+  background-color: var(--bg-main-page) !important;
   color: var(--text-primary) !important;
 }
